@@ -83,11 +83,17 @@ class PlantServer (BaseHTTPRequestHandler):
     #	POST is for submitting data.
     def do_POST(self):
 
+        anyvalue = False
+
         content_length = int (self.headers['Content-Length'])  # <--- Gets the size of data
         post_data = self.rfile.read (content_length)  # <--- Gets the data itself
         print ("incoming http path: ", self.path, " with parameters: ",post_data)
         actuators = Actuators()
-        json_post_data = json.loads (post_data)
+
+        json_post_data = {}
+
+        if (content_length != 0):
+            json_post_data = json.loads (post_data)
         #response = BytesIO ()
         data = {}
 
@@ -95,30 +101,46 @@ class PlantServer (BaseHTTPRequestHandler):
 
             try:
                 type =json_post_data['type']
-                type_int =int(type)
             except:
                 print("no 'type' entry found ")
                 self._set_headers (False)
+                data['code'] = 1
                 data['response'] = "no 'type' entry found"
                 self.wfile.write (bytes (json.dumps (data), "utf-8"))
                 return
+
+            try:
+                type_int = int (type)
+            except:
+                print ("type is not an integer ")
+                self._set_headers (False)
+                data['code'] = 4
+                data['response'] = "ERROR: 'type' is not an integer"
+                self.wfile.write (bytes (json.dumps (data), "utf-8"))
+                return
+
+
 
             res_actuator = actuators.open_water(type_int)
 
             if (res_actuator[0]):
                 self._set_headers (True)
+                data['code'] = 0
+                data['time'] = time.asctime ()
                 data['response'] = res_actuator[1]
 
 
             else:
+
                 self._set_headers (False) #ho lasciato True, poi si vede
+                data['code'] = 2
                 data['response'] = res_actuator[1] #poi lo midifichi se fai il fatto dei thread
 
 
         else:
-
             self._set_headers(False)
             print("non sei in open_water")
+            data['code'] = 3
             data['response'] = "non sei in open_water"
 
         print(data)
