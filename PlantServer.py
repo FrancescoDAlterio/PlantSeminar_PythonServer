@@ -18,12 +18,12 @@ hostPort = 4567
 
 class PlantServer (BaseHTTPRequestHandler):
 
-    def _set_headers(self,val):
-        if(val):
-            self.send_response (200)
-        else:
-            self.send_response(422)
-
+    def _set_headers(self):
+        #if(val):
+         #   self.send_response (200)
+        #else:
+        #    self.send_response(422)
+        self.send_response (200)
         self.send_header ('Content-type', 'application/json')
         self.end_headers ()
 
@@ -43,7 +43,7 @@ class PlantServer (BaseHTTPRequestHandler):
 
             s_h = sensors.get_soil_humidity()
             print (s_h)
-            self._set_headers (True)
+            self._set_headers ()
             jsonString = JSONEncoder ().encode ({
                 "soil_humidity": s_h,
                 "time": time.asctime ()
@@ -55,7 +55,7 @@ class PlantServer (BaseHTTPRequestHandler):
 
             te = sensors.get_temperature()
             print (te)
-            self._set_headers (True)
+            self._set_headers ()
             jsonString = JSONEncoder ().encode ({
                 "temperature": te,
                 "time": time.asctime ()
@@ -67,7 +67,7 @@ class PlantServer (BaseHTTPRequestHandler):
 
             li = sensors.get_light()
             print (li)
-            self._set_headers (True)
+            self._set_headers ()
             jsonString = JSONEncoder ().encode ({
                 "light": li,
                 "time": time.asctime ()
@@ -76,14 +76,14 @@ class PlantServer (BaseHTTPRequestHandler):
             self.wfile.write (bytes (jsonString, "utf-8"))
 
         else:
-            self._set_headers (False)
+            self._set_headers ()
 
 
 
     #	POST is for submitting data.
     def do_POST(self):
 
-        anyvalue = False
+
 
         content_length = int (self.headers['Content-Length'])  # <--- Gets the size of data
         post_data = self.rfile.read (content_length)  # <--- Gets the data itself
@@ -103,9 +103,9 @@ class PlantServer (BaseHTTPRequestHandler):
                 type =json_post_data['type']
             except:
                 print("no 'type' entry found ")
-                self._set_headers (False)
+                self._set_headers ()
                 data['code'] = 1
-                data['response'] = "no 'type' entry found"
+                data['response'] = "ERROR: no 'type' entry found"
                 self.wfile.write (bytes (json.dumps (data), "utf-8"))
                 return
 
@@ -113,8 +113,8 @@ class PlantServer (BaseHTTPRequestHandler):
                 type_int = int (type)
             except:
                 print ("type is not an integer ")
-                self._set_headers (False)
-                data['code'] = 4
+                self._set_headers ()
+                data['code'] = 3
                 data['response'] = "ERROR: 'type' is not an integer"
                 self.wfile.write (bytes (json.dumps (data), "utf-8"))
                 return
@@ -124,24 +124,25 @@ class PlantServer (BaseHTTPRequestHandler):
             res_actuator = actuators.open_water(type_int)
 
             if (res_actuator[0]):
-                self._set_headers (True)
+                self._set_headers ()
                 data['code'] = 0
                 data['time'] = time.asctime ()
-                data['response'] = res_actuator[1]
+                data['type'] = res_actuator[1]
+                data['response'] = "OK"
 
 
             else:
 
-                self._set_headers (False) #ho lasciato True, poi si vede
+                self._set_headers () #ho lasciato True, poi si vede
                 data['code'] = 2
                 data['response'] = res_actuator[1] #poi lo midifichi se fai il fatto dei thread
 
 
         else:
-            self._set_headers(False)
-            print("non sei in open_water")
-            data['code'] = 3
-            data['response'] = "non sei in open_water"
+            self._set_headers()
+            print("you are not in /open_water") #da cambiare quando lo consegni
+            data['code'] = 4
+            data['response'] = "ERROR: you are not in /open_water"
 
         print(data)
         #response.write (json.dumps(data))
