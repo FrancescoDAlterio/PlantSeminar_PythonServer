@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3.6
 
 from http import client
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -11,12 +11,15 @@ from Sensors import Sensors
 from Actuators import Actuators
 
 
-
 hostName = ""
 hostPort = 4567
 
+ac = Actuators()
+ac.setupWriter()
+
 
 class PlantServer (BaseHTTPRequestHandler):
+
 
     def _set_headers(self):
         #if(val):
@@ -63,20 +66,36 @@ class PlantServer (BaseHTTPRequestHandler):
             print (jsonString)
             self.wfile.write (bytes (jsonString, "utf-8"))
 
+        elif (self.path == '/rain'):
+
+            rain = sensors.get_rain()
+            print (rain)
+            self._set_headers ()
+            jsonString = JSONEncoder ().encode ({
+                "value": rain[0],
+                "rain": rain[1],
+                "time": time.asctime ()
+            })
+            print (jsonString)
+            self.wfile.write (bytes (jsonString, "utf-8"))
+
         elif (self.path == '/light'):
 
             li = sensors.get_light()
             print (li)
             self._set_headers ()
             jsonString = JSONEncoder ().encode ({
-                "light": li,
+                "light": li[0],
+                "condition": li[1],
                 "time": time.asctime ()
             })
             print (jsonString)
             self.wfile.write (bytes (jsonString, "utf-8"))
 
         else:
-            self._set_headers ()
+            self.send_response (422)
+            self.send_header ('Content-type', 'application/json')
+            self.end_headers ()
 
 
 
@@ -100,34 +119,34 @@ class PlantServer (BaseHTTPRequestHandler):
         if(self.path == '/open_water' ):
 
             try:
-                type =json_post_data['type']
+                duration =json_post_data['duration']
             except:
-                print("no 'type' entry found ")
+                print("no 'duration' entry found ")
                 self._set_headers ()
                 data['code'] = 1
-                data['response'] = "ERROR: no 'type' entry found"
-                self.wfile.write (bytes (json.dumps (data), "utf-8"))
+                data['response'] = "ERROR: no 'duration' entry found"
+                self.wfile.write (bytes (json.dumps (data), 'utf-8'))
                 return
 
             try:
-                type_int = int (type)
+                duration_int = int (duration)
             except:
-                print ("type is not an integer ")
+                print ("duration is not an integer ")
                 self._set_headers ()
                 data['code'] = 3
-                data['response'] = "ERROR: 'type' is not an integer"
-                self.wfile.write (bytes (json.dumps (data), "utf-8"))
+                data['response'] = "ERROR: 'duration' is not an integer"
+                self.wfile.write (bytes (json.dumps (data), 'utf-8'))
                 return
 
 
 
-            res_actuator = actuators.open_water(type_int)
+            res_actuator = actuators.open_water(duration_int)
 
             if (res_actuator[0]):
                 self._set_headers ()
                 data['code'] = 0
                 data['time'] = time.asctime ()
-                data['type'] = res_actuator[1]
+                data['duration'] = res_actuator[1]
                 data['response'] = "OK"
 
 
@@ -146,9 +165,7 @@ class PlantServer (BaseHTTPRequestHandler):
 
         print(data)
         #response.write (json.dumps(data))
-        self.wfile.write (bytes (json.dumps(data), "utf-8"))
-
-
+        self.wfile.write (bytes (json.dumps(data), 'utf-8'))
 
 # import pdb; pdb.set_trace()
 
