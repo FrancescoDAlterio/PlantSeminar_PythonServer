@@ -1,8 +1,14 @@
+from InputReader import InputReader
+
 class Sensors():
 
     def get_soil_humidity(self):
 
-        return 1.1
+        ir = InputReader()
+
+        res = ir.read_analogic_sensor(1)
+
+        return res
 
     def get_temperature(self):
 

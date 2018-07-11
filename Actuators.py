@@ -17,18 +17,18 @@ class Actuators():
         elif(type == 3):
             return self.__open_3()
         else:
-            return False,"ERROR,no admissible value of type"
+            return False,"ERROR: no admissible value of type"
 
 
 
     def __open_1(self):
 
-        return True,"OK,open1"
+        return True,1
 
     def __open_2(self):
 
-        return True,"OK,open2"
+        return True,2
 
     def __open_3(self):
 
-        return True,"Ok,open3"
+        return True,3
