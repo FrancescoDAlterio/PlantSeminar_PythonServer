@@ -123,7 +123,7 @@ class PlantServer (BaseHTTPRequestHandler):
             except:
                 print("no 'duration' entry found ")
                 self._set_headers ()
-                data['code'] = 1
+                data['code'] = 2
                 data['response'] = "ERROR: no 'duration' entry found"
                 self.wfile.write (bytes (json.dumps (data), 'utf-8'))
                 return
@@ -152,15 +152,17 @@ class PlantServer (BaseHTTPRequestHandler):
 
             else:
 
-                self._set_headers () #ho lasciato True, poi si vede
-                data['code'] = 2
+                self._set_headers ()
+
+                #code 4=valve already open, code 5= no admissible value of duration, code 6= unable to create a thread(errore tecnico)
+                data['code'] = res_actuator[2]
                 data['response'] = res_actuator[1] #poi lo midifichi se fai il fatto dei thread
 
 
         else:
             self._set_headers()
             print("you are not in /open_water") #da cambiare quando lo consegni
-            data['code'] = 4
+            data['code'] = 1
             data['response'] = "ERROR: you are not in /open_water"
 
         print(data)
