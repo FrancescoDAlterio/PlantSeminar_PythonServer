@@ -72,8 +72,8 @@ class PlantServer (BaseHTTPRequestHandler):
             print (rain)
             self._set_headers ()
             jsonString = JSONEncoder ().encode ({
-                "value": rain[0],
-                "rain": rain[1],
+                "rain": rain[0],
+                "rain_verbose": rain[1],
                 "time": time.asctime ()
             })
             print (jsonString)
@@ -146,8 +146,8 @@ class PlantServer (BaseHTTPRequestHandler):
                 self._set_headers ()
                 data['code'] = 0
                 data['time'] = time.asctime ()
-                data['duration'] = res_actuator[1]
-                data['response'] = "OK"
+                data['duration'] = res_actuator[2]
+                data['response'] = res_actuator[1]
 
 
             else:
@@ -156,7 +156,7 @@ class PlantServer (BaseHTTPRequestHandler):
 
                 #code 4=valve already open, code 5= no admissible value of duration, code 6= unable to create a thread(errore tecnico)
                 data['code'] = res_actuator[2]
-                data['response'] = res_actuator[1] #poi lo midifichi se fai il fatto dei thread
+                data['response'] = res_actuator[1]
 
 
         else:
