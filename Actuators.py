@@ -2,6 +2,7 @@
 import time
 import _thread
 from OutputWriter import OutputWriter
+from DatabaseManager import DatabaseManager
 import RPi.GPIO as GPIO
 
 
@@ -29,7 +30,7 @@ class Actuators():
             #valve_status = 0  valve on
 
             if (valve_status == 0):
-                return False,"Valve already open",4
+                return False,"Valve is already open",4
 
             try:
                 _thread.start_new_thread(self.__open_water, (duration,))
@@ -37,10 +38,16 @@ class Actuators():
                 print("ERROR-Actuator: Unable to create a new thread")
                 return False,"ERROR: Unable to create a new thread",6
 
-            return True,"OK"
+            #scrivo sul database l' ora e la durata ,tabella open_water
+
+            db = DatabaseManager ()
+            valDB = db.store_open_water (duration)
+
+
+            return True,"OK",duration
 
         else:
-            return False,"ERROR: no admissible value of duration",5
+            return False,"No admissible value of duration",5
 
 
 
@@ -51,6 +58,9 @@ class Actuators():
         ow.pinON(self.ValvePin)
         time.sleep(dur)
         ow.pinOFF(self.ValvePin)
+
+
+
 
         return
  

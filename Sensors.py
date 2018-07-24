@@ -2,6 +2,7 @@ import os
 import glob
 import time
 
+from DatabaseManager import DatabaseManager
 from InputReader import InputReader
 
 analog_pin = {
@@ -25,14 +26,17 @@ class Sensors():
 
 
         res = ir.read_analogic_sensor(analog_pin["soil_humidity"])
+        db = DatabaseManager ()
 
         if (res <= 200):
+            valDB = db.store_moisture (0)
             return 0
-        elif (res >=650):
+        elif (res >=510):
+            valDB = db.store_moisture (100)
             return 100
         else:
-
-            temp = (10 * res -2000)/45
+            temp = (10 * res -2000)/31
+            valDB = db.store_moisture (int(temp))
             return int(temp)
 
 
@@ -40,16 +44,22 @@ class Sensors():
         ir = InputReader ()
 
         res = ir.read_analogic_sensor (analog_pin["light"])
+        db = DatabaseManager ()
 
         if (res<=200):
+            valDB = db.store_light (0)
             return 0,"Dark"
         elif(res >200 and res <= 400):
+            valDB = db.store_light (1)
             return 1,"Dim" #shadow
         elif(res > 400 and res <= 700):
+            valDB = db.store_light (2)
             return 2,"Light"
         elif(res >700 and res <= 900):
+            valDB = db.store_light (3)
             return 3,"Bright"
         else:
+            valDB = db.store_light (4)
             return 4,"Very Bright"
 
 
@@ -58,11 +68,16 @@ class Sensors():
 
         res = ir.read_analogic_sensor (analog_pin["rain"])
 
-        if (res > 500):
+        db = DatabaseManager ()
+
+        if (res > 400):
+            valDB = db.store_rain (0)
             return 0,"no rain"
-        elif(res >350 and res <=500):
+        elif(res >200 and res <=400):
+            valDB = db.store_rain (1)
             return 1,"rain"
         else:
+            valDB = db.store_rain (2)
             return 2,"heavy rain"
 
 
@@ -78,6 +93,9 @@ class Sensors():
             temp_string = lines[1][equals_pos + 2:]
             temp_c = float (temp_string) / 1000.0
             #temp_f = temp_c * 9.0 / 5.0 + 32.0
+            db = DatabaseManager ()
+            valDB = db.store_temperature (temp_c)
+
             return temp_c
 
 

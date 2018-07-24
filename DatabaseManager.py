@@ -44,6 +44,10 @@ class DatabaseManager():
 
         return self.__store_record(3,light)
 
+    def store_temperature(self,temperature):
+
+        return self.__store_record(4,temperature)
+
 
     def __store_record(self,table,specific_value):
 
@@ -85,6 +89,15 @@ class DatabaseManager():
                 conn.close ()
                 return 1
 
+        elif (table == 4): #temperature
+            try:
+                c.execute ("INSERT INTO {tn} ({c1}, {c2}) VALUES ({tstamp}, {value})". \
+                           format (tn=temperature_table, c1=t_time, c2=t_temperature, tstamp=my_time, value=specific_value))
+            except sqlite3.IntegrityError:
+                conn.close ()
+                return 1
+
+        # the else condition should do nothing, it doesn't write on the db
 
         conn.commit ()
         conn.close ()
